@@ -35,9 +35,8 @@ export class AuthController {
   }
 
   @Get('/profile')
-  @UseGuards(AuthGuardFc)
-  profile(@Request() req) {
-    delete req.user.isAdmin;
-    return req.user;
+  @UseGuards(AuthGuardFc(false))
+  profile(@Request() req: any) {
+    return this.authService.getUser(req?.user?.sub);
   }
 }

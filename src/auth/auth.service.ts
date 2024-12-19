@@ -10,6 +10,19 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async getUser(id: string) {
+    const user = await this.UsersService.findOne(undefined, id);
+
+    return {
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      followersCount: user.followers.length,
+      followingCount: user.following.length,
+      postsCount: user.posts.length,
+    };
+  }
+
   async register(username: string, email: string, password: string) {
     return await this.UsersService.create(username, email, password);
   }
