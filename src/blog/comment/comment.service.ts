@@ -218,7 +218,9 @@ export class CommentService {
           createdAt: comment.createdAt,
           postId: comment.post,
           isLikedByAuthorizedUser: comment.likes.includes(authorId as any),
-          isCommenter: String(comment.commenter.id) == String(authorId)
+          isCommenter:
+            String(comment.commenter._id.toString()) ==
+            String(authorId.toString()),
         })),
       };
     } catch (error) {
