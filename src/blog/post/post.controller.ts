@@ -11,11 +11,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuardFc } from 'src/auth/auth.guard';
+import { CommentService } from '../comment/comment.service';
+import { createCommentDto } from './dtos/createComment.dto';
 import { createPostDto } from './dtos/createPost.dto';
 import { updatePostDto } from './dtos/updatePost.dto';
 import { PostService } from './post.service';
-import { createCommentDto } from './dtos/createComment.dto';
-import { CommentService } from '../comment/comment.service';
 
 @Controller('posts')
 export class PostController {
@@ -25,7 +25,7 @@ export class PostController {
   ) {}
 
   @Post()
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async create(@Request() req, @Body() body: createPostDto) {
     return this.postService.create({
       title: body.title,
@@ -35,13 +35,13 @@ export class PostController {
   }
 
   @Put('/:id/like')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async like(@Request() req, @Param('id') id: string) {
     return this.postService.like(req.user.sub, id);
   }
 
   @Put(':id')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async update(
     @Request() req,
     @Param('id') id: string,
@@ -51,7 +51,7 @@ export class PostController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async delete(@Request() req, @Param('id') id: string) {
     return this.postService.delete({
       poster: req.user.sub,
@@ -60,14 +60,14 @@ export class PostController {
   }
 
   @Get()
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async listPosts(@Request() req, @Query('page') page: number = 1) {
     return this.postService.find(req.user.sub, page - 1, req.user.isAdmin);
   }
 
-  @Get('/feed')
-  @UseGuards(AuthGuardFc)
-  async feeds(@Request() req, @Query('page') page: number = 1) {
+  @Get('/feeds')
+  @UseGuards(AuthGuardFc(false))
+  async feeds(@Request() req, @Query('page') page: number = 1): Promise<any> {
     return this.postService.feeds(req.user.sub, page - 1);
   }
 
@@ -90,7 +90,7 @@ export class PostController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async getPost(@Request() req, @Param('id') id: string) {
     return this.postService.findOne(req.user.sub, id, req.user.isAdmin);
   }
@@ -98,7 +98,7 @@ export class PostController {
   // comments Section
 
   @Post('/:id/comments')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async createComment(
     @Request() req,
     @Param('id') id: string,
@@ -108,7 +108,7 @@ export class PostController {
   }
 
   @Get('/:id/comments/:commentId')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async getComment(
     @Request() req,
     @Param('id') id: string,
@@ -118,17 +118,17 @@ export class PostController {
   }
 
   @Get('/:id/comments')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async getComments(
     @Request() req,
     @Param('id') id: string,
     @Query('page') page: number = 1,
-  ) {
+  ): Promise<any> {
     return this.commentService.find(id, page - 1, req.user.sub);
   }
 
   @Put('/:id/comments/:commentId/like')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async likeComment(
     @Request() req,
     @Param('id') id: string,
@@ -138,7 +138,7 @@ export class PostController {
   }
 
   @Put('/:id/comments/:commentId')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async updateComments(
     @Request() req,
     @Param('id') id: string,
@@ -154,7 +154,7 @@ export class PostController {
   }
 
   @Delete('/:id/comments/:commentId')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async deleteComment(
     @Request() req,
     @Param('id') id: string,

@@ -178,27 +178,49 @@ export class CommentService {
     }
   }
 
-  async find(postId: string, page: number = 0, authorId: string) {
+  async find(postId: string, page: number = 0, authorId: string): Promise<any> {
     try {
       if (page < 0) page = 0;
+      const count = await this.comments
+        .find({
+          post: postId,
+          isDeleted: false,
+        })
+        .countDocuments();
       const comments = await this.comments
         .find({
           post: postId,
           isDeleted: false,
         })
         .skip(page * 10)
-        .limit(10);
-      return comments.map((comment) => ({
-        id: comment._id,
-        content: comment.content,
-        likesCount: comment.likes.length,
-        commenter: comment.commenter,
-        createdAt: comment.createdAt,
-        postId: comment.post,
-        isLikedByAuthorizedUser: comment.likes.includes(
-          authorId as any as User,
-        ),
-      }));
+        .limit(10)
+        .populate('commenter')
+        .lean();
+      const lastPage = Math.ceil(count / 10);
+      const havePrevious = page > 0;
+      const haveNext = lastPage - 1 > page;
+      return {
+        prev: havePrevious,
+        next: haveNext,
+        data: comments.map((comment) => ({
+          id: comment._id,
+          content: comment.content,
+          likesCount: comment.likes.length,
+          commenter: {
+            username: comment.commenter.username,
+            avatar: comment.commenter.avatar,
+            followersCount: comment.commenter.followers.length,
+            followingCount: comment.commenter.following.length,
+            postsCount: comment.commenter.posts.length,
+            id: comment.commenter._id,
+            createdAt: comment.commenter.createdAt,
+          },
+          createdAt: comment.createdAt,
+          postId: comment.post,
+          isLikedByAuthorizedUser: comment.likes.includes(authorId as any),
+          isCommenter: String(comment.commenter.id) == String(authorId)
+        })),
+      };
     } catch (error) {
       console.log(error);
       throw error;

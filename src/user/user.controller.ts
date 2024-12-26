@@ -19,7 +19,7 @@ export class UserController {
   constructor(private users: UserService) {}
 
   @Get('/followers')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async followers(@Request() req, @Query('page') page: number = 1) {
     return this.users.listFollowing(req.user.sub, page - 1);
   }
@@ -39,25 +39,25 @@ export class UserController {
   }
 
   @Put()
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async updateAccount(@Request() req, @Body() body: updateAccDto) {
     return this.users.update(req.user.sub, body);
   }
 
   @Delete()
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async deleteAccount(@Request() req) {
     return this.users.delete(req.user.sub);
   }
 
   @Post('/:id/follow')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async followUser(@Request() req, @Param('id') id: string) {
     return this.users.toogleFollow(req.user.sub, id, true);
   }
 
   @Delete('/:id/unfollow')
-  @UseGuards(AuthGuardFc)
+  @UseGuards(AuthGuardFc(false))
   async unfollowUser(@Request() req, @Param('id') id: string) {
     return this.users.toogleFollow(req.user.sub, id, false);
   }

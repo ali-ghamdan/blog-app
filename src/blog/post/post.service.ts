@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model } from 'mongoose';
-import { User } from 'src/schema/user.schema';
 import { Post } from 'src/schema/post.schema';
+import { User } from 'src/schema/user.schema';
 import { postCreateInterface, postDeleteInterface } from './post.service.type';
 
 @Injectable()
@@ -151,6 +151,7 @@ export class PostService {
           id: post.poster._id,
           avatar: post.poster.avatar,
           postsCount: post.poster.posts.length,
+          createdAt: post.poster.createdAt,
         },
         isLikedByAuthorizedUser: post.likes.includes(authorId as any as User),
       };
@@ -196,7 +197,7 @@ export class PostService {
     if (page < 0) page = 0;
     const user = await this.users.findById(userId);
     if (user.following.length > 0) await user.populate('following');
-    const feeds = this.posts
+    let feeds = await this.posts
       .find({
         poster: {
           $in: user.following,
@@ -204,9 +205,36 @@ export class PostService {
         isDeleted: false,
       })
       .skip(page * 15)
-      .limit(15);
-
-    return feeds;
+      .limit(15)
+      .populate('poster');
+    if (feeds.length === 0) {
+      feeds = await this.posts
+        .find({
+          isDeleted: false,
+        })
+        .skip(page * 15)
+        .limit(15)
+        .populate('poster');
+    }
+    return feeds.map((post) => ({
+      id: post._id,
+      title: post.title,
+      poster: {
+        id: post.poster._id,
+        username: post.poster.username,
+        avatar: post.poster.avatar,
+        postsCount: post.poster.posts.length,
+        followersCount: post.poster.followers.length,
+        followingCount: post.poster.following.length,
+        createdAt: post.poster.createdAt,
+      },
+      commentsCount: post.comments.length,
+      shortContent: post.content.slice(0, 100),
+      likes: post.likes.length,
+      isLikedByAuthorizedUser: post.likes.includes(userId as any as User),
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+    }));
   }
 
   async search(
