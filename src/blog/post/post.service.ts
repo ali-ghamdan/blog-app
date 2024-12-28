@@ -154,6 +154,8 @@ export class PostService {
           createdAt: post.poster.createdAt,
         },
         isLikedByAuthorizedUser: post.likes.includes(authorId as any as User),
+        isPoster:
+          String(post.poster._id.toString()) == String(authorId.toString()),
       };
     } catch (error) {
       throw error;
